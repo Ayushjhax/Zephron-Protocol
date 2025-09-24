@@ -2,9 +2,10 @@
 
 > *Zephron Protocol is a unified ecosystem that transforms physical gold into a liquid on-chain asset, enabling users to instantly borrow against their holdings.*
 
-**MVP GitHub:** [Coming Soon]
-
 **MVP Demo Video:** [https://drive.google.com/file/d/1-kgw9fPsz_Z3dJifnMFgQtC7-HQZnNvD/view](https://drive.google.com/file/d/1-kgw9fPsz_Z3dJifnMFgQtC7-HQZnNvD/view)
+
+![](Frontend/asset/final.png)
+
 
 
 ## Table of Contents
@@ -21,7 +22,6 @@
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Clone & Install](#clone--install)
-  - [Environment Variables](#environment-variables)
   - [Run the Frontend](#run-the-frontend)
   - [Build & Test the Program](#build--test-the-program)
   - [Deploy to Devnet](#deploy-to-devnet)
@@ -51,14 +51,21 @@ We are building a vertically integrated, two-pronged solution that solves the co
 
 - **The Digital Portfolio Platform:** This is an intuitive gateway for users to seamlessly convert fiat currency (INR/USD/NPR) into tokenized gold. It provides banking-style features, including asset management, deposits, and collateralized lending, making digital gold accessible and useful.
 
+![](Frontend/asset/pd3.png)
+
 - **The Programmable Gold Protocol:** This is the on-chain layer where gold's value is made programmable and liquid. By collateralizing assets within this transparent protocol, users can mint a stable, GOLD-pegged digital asset, unlocking liquidity and enabling participation in the broader digital economy without selling their underlying holdings.
+
+![](Frontend/asset/pd2.png)
 
 - **Unlocking Liquidity & Yield (Lending):** The core utility of our ecosystem is the ability to unlock the value of your assets without selling them. Users can lock their tokenized gold as collateral to take out instant loans, providing immediate liquidity. This creates a powerful engine for both borrowing and yield generation. All lending is governed by a strict, real-time mathematical model to ensure system solvency at all times.
 
+![](Frontend/asset/pd1.png)
 
 ## Product Deep Dive 1 with MVP: The Programmable Gold On-Chain Protocol
 
 It allows users to lock SOL as an Asset as collateral to mint a synthetic, GOLD-pegged stable asset. This creates a capital-efficient way to access liquidity against crypto holdings, with risk managed transparently by on-chain smart contracts.
+
+![](Frontend/asset/image.png)
 
 **Program Id:** `EGtHEv1xJP3aA3fT5JVB7H2UXoR6s7rB6iYjkifDqdvQ`
 
@@ -86,49 +93,35 @@ It allows users to lock SOL as an Asset as collateral to mint a synthetic, GOLD-
 
 - **Value of SOL Collateral in USD (scaled to 10^9 precision):**
 
-```
-V_sol_usd = (L * P_sol_usd) / 10^9
-```
+![](Frontend/asset/collateralusd.png)
 
 - **Value of Collateral in GOLD Terms (scaled to 10^9 precision):** This formula converts the USD value of the collateral into its equivalent value in GOLD.
 
-```
-V_sol_gold = (L * P_sol_usd) / (P_gold_usd * 10^9)
-```
+![](Frontend/asset/valuecollateral.png)
 
 ### **2. Health Factor and Liquidation**
 
 - **Health Factor (HF) Calculation:** This is the most critical risk metric. It measures how many times the collateral value covers the debt.
 
-```
-HF = V_sol_gold / D_gold
-```
+![](Frontend/asset/healthfactor.png)
 
 - **Liquidation Condition:** A position is deemed unsafe and open to liquidation when:
 
-```
-HF < HF_min
-```
+```HF < HFmin```
 
 - **Maximum Mintable GOLD:** The maximum amount of GOLD a user can mint against their collateral L without being instantly liquidatable.
 
-```
-D_gold_max = (L * P_sol_usd) / (P_gold_usd * HF_min * 10^9)
-```
+![](Frontend/asset/max.png)
 
 ### **3. Liquidation Payout Calculation**
 
 - **SOL Equivalent for Burned GOLD:** When a liquidator burns an amount of GOLD (Dburn), this formula calculates the base amount of SOL they are entitled to from the borrower's vault.
 
-```
-L_base = (D_burn * P_gold_usd * 10^9) / P_sol_usd
-```
+![](Frontend/asset/burn.png)
 
 - **Total Liquidation Payout (with bonus):** The liquidator receives the base SOL amount plus a bonus to incentivize them to secure the protocol.
 
-```
-L_total = L_base * (1 + Bonus%)
-```
+![](Frontend/asset/liquidation.png)
 
 ## **Product Deep Dive 2: The Digital Portfolio Platform**
 
@@ -159,42 +152,29 @@ This platform serves as the intuitive, regulated front-end to our ecosystem. It 
 
 - **Effective Collateral Value (Vc):** The value of the collateral after applying the safety haircut.
 
-```
-Vc = G * Pt * (1 - h)
-```
+![](Frontend/asset/collateralvalue.png)
 
 - **Collateralization Ratio (CR) and Loan-to-Value (LTV):** CR measures collateral safety, while LTV is its inverse.
 
-```
-CR = Vc / L
-LTV = L / Vc = 1 / CR
-```
+![](Frontend/asset/ratio.png)
 
 - **Maximum Borrowing Capacity (Lmax):** The maximum INR a user can borrow against their gold, based on the target CR.
 
-```
-Lmax = (G * Pt * (1 - h)) / CRtarget
-```
+![](Frontend/asset/maxborrow.png)
 
 ### **2. Interest and Liquidation**
 
 - **Interest Accrual (Compounding Daily):** The outstanding loan balance grows over time based on the interest rate.
 
-```
-Lt = L0 * (1 + R(annual)/365)^t
-```
+![](Frontend/asset/interest.png)
 
 - **Liquidation Trigger Price (Pliq):** The critical gold price at which the Collateralization Ratio hits the minimum threshold and a liquidation is triggered.
 
-```
-Pliq = (L * CRmin) / (G * (1 - h))
-```
+![](Frontend/asset/pliq.png)
 
 - **Partial Liquidation Sizing (ΔG):** This formula calculates the precise amount of gold (ΔG) that must be sold to restore the loan's health to the target CR.
 
-```
-ΔG = (L * (CRmin - CRtarget)) / (Pt * (1 - h) * CRtarget)
-```
+![](Frontend/asset/last.png)
 
 
 ## Devnet Deployments
