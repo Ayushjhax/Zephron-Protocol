@@ -1,33 +1,21 @@
-## Zephron Protocol
+# **Zephron Protocol**
 
-Programmable, collateralized GOLD on Solana + a user-friendly Digital Portfolio Platform.
+> *Zephron Protocol is a unified ecosystem that transforms physical gold into a liquid on-chain asset, enabling users to instantly borrow against their holdings.*
 
-- **MVP GitHub**: [link-placeholder]
-- **MVP Demo Video**: [link-placeholder]
+**MVP GitHub:** [Coming Soon]
 
-> Add your media later:
-> - System design images: place in `docs/` and embed below
-> - Architecture diagram: place in `docs/` and embed below
-> - Demo screenshots/GIFs: place in `docs/` and embed below
-
-
-### Badges
-- **License**: MIT
-- **Chain**: Solana (Anchor)
-- **Frontend**: Next.js (Turborepo Monorepo)
+**MVP Demo Video:** [https://drive.google.com/file/d/1-kgw9fPsz_Z3dJifnMFgQtC7-HQZnNvD/view](https://drive.google.com/file/d/1-kgw9fPsz_Z3dJifnMFgQtC7-HQZnNvD/view)
 
 
 ## Table of Contents
-- [Vision](#vision)
-- [Problem](#problem)
-- [Solution Overview](#solution-overview)
-  - [Digital Portfolio Platform](#digital-portfolio-platform)
-  - [Programmable Gold Protocol](#programmable-gold-protocol)
-- [Core Mechanics](#core-mechanics)
-  - [Deposit & Mint](#deposit--mint)
-  - [Redeem & Burn](#redeem--burn)
-  - [Liquidation](#liquidation)
-  - [Risk Variables](#risk-variables)
+- [The Problem](#the-problem)
+- [Our Solution](#our-solution-a-unified-ecosystem-and-protocol-for-programmable-gold)
+- [Product Deep Dive 1: Programmable Gold Protocol](#product-deep-dive-1-with-mvp-the-programmable-gold-on-chain-protocol)
+  - [Core Mechanics & User Flows](#core-mechanics--user-flows)
+  - [Mathematical Formulas](#mathematical-formulas)
+- [Product Deep Dive 2: Digital Portfolio Platform](#product-deep-dive-2-the-digital-portfolio-platform)
+  - [Core Mechanics & User Flows](#core-mechanics--user-flows-1)
+  - [Mathematical Formulas](#mathematical-formulas-1)
 - [Devnet Deployments](#devnet-deployments)
 - [Repository Structure](#repository-structure)
 - [Getting Started](#getting-started)
@@ -44,54 +32,169 @@ Programmable, collateralized GOLD on Solana + a user-friendly Digital Portfolio 
 - [Acknowledgements](#acknowledgements)
 
 
-## Vision
-For millions of households, gold is the primary store of wealth—but remains a dead, illiquid asset in physical form. Zephron Protocol creates a trusted, instant digital bridge that transforms static gold into a liquid, programmable asset for borrowing, spending, and participating in modern finance.
+# **The Problem**
+
+For millions of households, gold is their primary store of wealth, yet it remains a **dead asset** locked away in physical form. Unlocking its value through traditional channels is a slow, costly, and often cumbersome process.
+
+The core, unsolved problem is the lack of a **trusted and instant digital bridge** that allows consumers to transform their static gold holdings into a liquid, productive asset for borrowing, spending, and participating in the modern financial ecosystem without friction.
+
+The current market is bifurcated, forcing households into a difficult trade-off.
+
+**The Physical Market:** Owning physical gold provides true ownership but is plagued by **high custodial costs, poor liquidity, slow T+2 settlement times, and a lack of utility.**
 
 
-## Problem
-- Physical gold offers true ownership but suffers from high custodial costs, poor liquidity, slow T+2 settlement, and minimal utility.
-- The market is bifurcated between physical gold and fragmented digital experiences. Users face a hard trade-off between trust and utility.
+# **Our Solution: A Unified Ecosystem and Protocol for Programmable Gold**
+
+*The figure presents the final product with the integration of programmable gold.*
+
+We are building a vertically integrated, two-pronged solution that solves the core problems of trust, liquidity, and utility.
+
+- **The Digital Portfolio Platform:** This is an intuitive gateway for users to seamlessly convert fiat currency (INR/USD/NPR) into tokenized gold. It provides banking-style features, including asset management, deposits, and collateralized lending, making digital gold accessible and useful.
+
+- **The Programmable Gold Protocol:** This is the on-chain layer where gold's value is made programmable and liquid. By collateralizing assets within this transparent protocol, users can mint a stable, GOLD-pegged digital asset, unlocking liquidity and enabling participation in the broader digital economy without selling their underlying holdings.
+
+- **Unlocking Liquidity & Yield (Lending):** The core utility of our ecosystem is the ability to unlock the value of your assets without selling them. Users can lock their tokenized gold as collateral to take out instant loans, providing immediate liquidity. This creates a powerful engine for both borrowing and yield generation. All lending is governed by a strict, real-time mathematical model to ensure system solvency at all times.
 
 
-## Solution Overview
-Zephron is a vertically integrated, two-pronged ecosystem:
+## Product Deep Dive 1 with MVP: The Programmable Gold On-Chain Protocol
 
-### Digital Portfolio Platform
-- An intuitive on-ramp to convert INR to tokenized gold with banking-style UX.
-- Provides asset management, deposits, and collateralized lending.
+It allows users to lock SOL as an Asset as collateral to mint a synthetic, GOLD-pegged stable asset. This creates a capital-efficient way to access liquidity against crypto holdings, with risk managed transparently by on-chain smart contracts.
 
-### Programmable Gold Protocol
-- On-chain, transparent, and decentralized layer that makes gold value programmable.
-- Users collateralize assets to mint a GOLD-pegged digital asset, unlocking liquidity without selling holdings.
-- Lending and solvency are governed by strict on-chain mathematics and real-time oracles.
+**Program Id:** `EGtHEv1xJP3aA3fT5JVB7H2UXoR6s7rB6iYjkifDqdvQ`
 
-> [Architecture Diagram Placeholder]
->
-> Embed later: `docs/architecture.png`
+**Signature:** `7ruA1gESbkMz1tvoKNFmADHg3XtvptwwXLSk2JxKt3TmGtvUdaF2jXR4gkbJovokQSgQ8Qw85LTJDSSctef11rn`
 
+**Initialization:** [https://explorer.solana.com/tx/5nQmjPPLXavsWMMmTauj6Lo23QkC9pRG1WUK8HpAdBWdyJQnUQHtm4w1VCKwY2vUhXwQWLtMF5wyqasFT4EKBXQ5?cluster=devnet](https://explorer.solana.com/tx/5nQmjPPLXavsWMMmTauj6Lo23QkC9pRG1WUK8HpAdBWdyJQnUQHtm4w1VCKwY2vUhXwQWLtMF5wyqasFT4EKBXQ5?cluster=devnet)
 
-## Core Mechanics
-### Deposit & Mint
-Lock SOL collateral into a PDA vault and mint GOLD (a synthetic asset pegged to gold) against it, maintaining safe over-collateralization.
+### **Core Mechanics & User Flows**
 
-### Redeem & Burn
-Repay GOLD and burn it to unlock and withdraw the corresponding amount of SOL collateral.
+1. **Deposit & Mint:** A user deposits an SOL asset into their personal, on-chain collateral vault (PDA). They can then mint a specified amount of the GOLD token against this collateral, provided their position remains safely over-collateralized.
+2. **Redeem & Burn:** The user can repay their minted GOLD debt at any time. By burning GOLD tokens, they unlock and withdraw a corresponding amount of their SOL collateral.
+3. **Liquidation:** If the value of the user's SOL collateral drops, their position's Health Factor decreases. If it falls below a minimum threshold, the position becomes eligible for liquidation. Any third-party user (a "liquidator") can repay a portion of the user's GOLD debt in exchange for receiving a discounted amount of their SOL collateral, thus securing the protocol.
 
-### Liquidation
-If a position’s Health Factor (HF) falls below the minimum threshold, it becomes eligible for permissionless liquidation. Liquidators burn GOLD to repay debt and receive SOL collateral plus a bonus.
+**Key Variables:**
 
-### Risk Variables
-- **L**: Lamports of SOL locked as collateral
-- **D_gold**: Amount of GOLD minted (debt, 9 decimals)
-- **P_sol_usd**: SOL/USD price from Pyth
-- **P_gold_usd**: GOLD/USD price from Pyth
-- **HF**: Health Factor (collateral value vs. debt value)
-- **HF_min**: Minimum HF before liquidation (e.g., 1.0)
-- **Bonus%**: Liquidation bonus (e.g., 10%)
+- L: Lamports of SOL in the user's collateral vault (1 SOL=10^9 lamports).
+- Dgold: Amount of GOLD minted by the user (debt), with 9 decimals.
+- Psol_usd: Price of SOL in USD from the Pyth oracle.
+- Pgold_usd: Price of GOLD in USD from the Pyth oracle.
+- HF: Health Factor, a dimensionless ratio of collateral value to debt value.
+- HFmin: The minimum Health Factor before liquidation is triggered (e.g., 1.0).
+- Bonus%: The liquidation bonus percentage paid to liquidators (e.g., 10%).
 
-> [System Design Placeholder]
->
-> Embed later: `docs/system-design-protocol.png`
+### **1. Collateral and Debt Valuation**
+
+- **Value of SOL Collateral in USD (scaled to 10^9 precision):**
+
+```
+V_sol_usd = (L * P_sol_usd) / 10^9
+```
+
+- **Value of Collateral in GOLD Terms (scaled to 10^9 precision):** This formula converts the USD value of the collateral into its equivalent value in GOLD.
+
+```
+V_sol_gold = (L * P_sol_usd) / (P_gold_usd * 10^9)
+```
+
+### **2. Health Factor and Liquidation**
+
+- **Health Factor (HF) Calculation:** This is the most critical risk metric. It measures how many times the collateral value covers the debt.
+
+```
+HF = V_sol_gold / D_gold
+```
+
+- **Liquidation Condition:** A position is deemed unsafe and open to liquidation when:
+
+```
+HF < HF_min
+```
+
+- **Maximum Mintable GOLD:** The maximum amount of GOLD a user can mint against their collateral L without being instantly liquidatable.
+
+```
+D_gold_max = (L * P_sol_usd) / (P_gold_usd * HF_min * 10^9)
+```
+
+### **3. Liquidation Payout Calculation**
+
+- **SOL Equivalent for Burned GOLD:** When a liquidator burns an amount of GOLD (Dburn), this formula calculates the base amount of SOL they are entitled to from the borrower's vault.
+
+```
+L_base = (D_burn * P_gold_usd * 10^9) / P_sol_usd
+```
+
+- **Total Liquidation Payout (with bonus):** The liquidator receives the base SOL amount plus a bonus to incentivize them to secure the protocol.
+
+```
+L_total = L_base * (1 + Bonus%)
+```
+
+## **Product Deep Dive 2: The Digital Portfolio Platform**
+
+This platform serves as the intuitive, regulated front-end to our ecosystem. It handles user onboarding (KYC/AML), fiat-to-crypto conversion, and provides a familiar interface for managing a portfolio of digital assets, including physically-backed tokenized gold. Its key feature is offering instant liquidity through gold-collateralized INR loans.
+
+### **Core Mechanics & User Flows**
+
+1. **Onboarding & Deposit:** Users complete a standard KYC process. They can then deposit INR instantly via integrated payment gateways like Razorpay and Stripe.
+2. **Buy & Hold Gold:** Users convert their INR balance into tokenized gold grams at real-time market prices. This gold is fully backed by SOL and Stablecoin as collateral.
+3. **Collateralize & Borrow:** Users can lock their gold holdings as collateral to open an instant line of credit, borrowing INR against their assets without selling them.
+4. **Monitor & Repay:** The platform provides a real-time dashboard to monitor the health of their loan (Collateralization Ratio). Users can repay the loan principal and accrued interest at any time to unlock their gold.
+5. **Liquidation:** If the market price of gold falls and the loan's Collateralization Ratio breaches a minimum threshold, the platform's risk engine automatically sells just enough of the collateralized gold to bring the loan back to a healthy state.
+
+**Key Variables:**
+
+- G: Grams of gold held as collateral.
+- Pt: Market price of gold per gram at time t.
+- h: Collateral haircut (a safety buffer, e.g., 5% or 0.05).
+- L: Loan principal in INR.
+- CR: Collateralization Ratio.
+- LTV: Loan-to-Value ratio.
+- CRtarget: The ideal ratio at the initiation of a loan (e.g., 2.0 or 200%).
+- CRmin: The minimum ratio that triggers a liquidation event (e.g., 1.5 or 150%).
+- λ: Liquidation penalty applied to the collateral sold (e.g., 8% or 0.08).
+- R(annual): The annual percentage rate (APR) for the loan.
+
+### **1. Loan and Value Calculations**
+
+- **Effective Collateral Value (Vc):** The value of the collateral after applying the safety haircut.
+
+```
+Vc = G * Pt * (1 - h)
+```
+
+- **Collateralization Ratio (CR) and Loan-to-Value (LTV):** CR measures collateral safety, while LTV is its inverse.
+
+```
+CR = Vc / L
+LTV = L / Vc = 1 / CR
+```
+
+- **Maximum Borrowing Capacity (Lmax):** The maximum INR a user can borrow against their gold, based on the target CR.
+
+```
+Lmax = (G * Pt * (1 - h)) / CRtarget
+```
+
+### **2. Interest and Liquidation**
+
+- **Interest Accrual (Compounding Daily):** The outstanding loan balance grows over time based on the interest rate.
+
+```
+Lt = L0 * (1 + R(annual)/365)^t
+```
+
+- **Liquidation Trigger Price (Pliq):** The critical gold price at which the Collateralization Ratio hits the minimum threshold and a liquidation is triggered.
+
+```
+Pliq = (L * CRmin) / (G * (1 - h))
+```
+
+- **Partial Liquidation Sizing (ΔG):** This formula calculates the precise amount of gold (ΔG) that must be sold to restore the loan's health to the target CR.
+
+```
+ΔG = (L * (CRmin - CRtarget)) / (Pt * (1 - h) * CRtarget)
+```
 
 
 ## Devnet Deployments
@@ -105,10 +208,6 @@ If a position’s Health Factor (HF) falls below the minimum threshold, it becom
 - **Pyth Oracles**:
   - GOLD/USD PriceUpdateV2: `https://explorer.solana.com/address/2uPQGpm8X4ZkxMHxrAW1QuhXcse1AHEgPih6Xp9NuEWW?cluster=devnet`
   - SOL/USD PriceUpdateV2: `https://explorer.solana.com/address/7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE?cluster=devnet`
-
-> [Demo Video Placeholder]
->
-> Embed later: `docs/demo.mp4`
 
 
 ## Repository Structure
@@ -139,7 +238,6 @@ If a position’s Health Factor (HF) falls below the minimum threshold, it becom
 ```bash
 # Clone
 git clone https://github.com/zephron-labs/zephron-protocol.git
-cd zephron-protocol
 
 # Install (root)
 npm install
@@ -147,21 +245,6 @@ npm install
 # Install workspace deps if needed
 cd Frontend/apps/buyer && npm install
 ```
-
-### Environment Variables
-Create environment files and fill in secrets.
-
-- Frontend `Frontend/apps/buyer/.env.local`:
-```
-NEXT_PUBLIC_SOLANA_CLUSTER=devnet
-NEXTAUTH_SECRET=your_secret
-# Payment providers (optional for demo)
-RAZORPAY_KEY_ID=
-RAZORPAY_KEY_SECRET=
-STRIPE_SECRET_KEY=
-``` 
-
-- Program: usually no env file required. Ensure Solana CLI is set to devnet and you have a funded keypair.
 
 ```bash
 solana config set --url https://api.devnet.solana.com
@@ -204,8 +287,6 @@ Contributions are welcome! Please:
 - Open an issue to discuss substantial changes
 - Submit focused PRs with clear descriptions
 - Follow existing code style and linting
-
-> [Contribution Guide Placeholder] — add `CONTRIBUTING.md` later if desired.
 
 
 ## Security
