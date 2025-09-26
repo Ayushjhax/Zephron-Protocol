@@ -34,9 +34,7 @@
 
 # **The Problem**
 
-For millions of households, gold is their primary store of wealth, yet it remains a **dead asset** locked away in physical form. Unlocking its value through traditional channels is a slow, costly, and often cumbersome process.
-
-The core, unsolved problem is the lack of a **trusted and instant digital bridge** that allows consumers to transform their static gold holdings into a liquid, productive asset for borrowing, spending, and participating in the modern financial ecosystem without friction.
+For millions of households, physical gold remains the primary store of wealth yet it is illiquid and unproductive. There is no instant financial infrastructure or liquidity base layer to unlock this static capital, connect USD and non-USD markets, or support the use of local stablecoins in everyday commerce. Existing tokenized gold products like XAUt only offer limited trading pairs and opaque custody, failing to provide true liquidity or seamless integration. The result is a borderless economy that remains out of reach, with trillions in real-world value trapped in slow, costly financial channels.
 
 The current market is bifurcated, forcing households into a difficult trade-off.
 
