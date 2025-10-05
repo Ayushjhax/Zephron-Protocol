@@ -224,85 +224,47 @@ The protocol uses a shares system to fairly distribute interest and fees among d
 
 - **Deposit Shares Calculation:** When a user deposits amount `A` into a bank:
 
-```
-If TD = 0 (first deposit):
-  User Shares = A
-  TDS = A
-  TD = A
-
-Otherwise:
-  Deposit Ratio = A / TD
-  User Shares = TDS × Deposit Ratio
-  TDS = TDS + User Shares
-  TD = TD + A
-```
+![](Frontend/asset/lending-deposit-shares.svg)
 
 - **Borrow Shares Calculation:** When a user borrows amount `B`:
 
-```
-If TB = 0 (first borrow):
-  User Borrow Shares = B
-  TBS = B
-  TB = B
-
-Otherwise:
-  Borrow Ratio = B / TB
-  User Borrow Shares = TBS × Borrow Ratio
-  TBS = TBS + User Borrow Shares
-  TB = TB + B
-```
+![](Frontend/asset/lending-borrow-shares.svg)
 
 ### **2. Collateral and Borrowing Calculations**
 
 - **Total Collateral Value in USD:**
 
-```
-Total Collateral = (Dsol × Psol_usd) + (Dusdc × Pusdc_usd)
-```
+![](Frontend/asset/lending-total-collateral.svg)
 
 - **Total Borrowed Value in USD:**
 
-```
-Total Borrowed = (Bsol × Psol_usd) + (Busdc × Pusdc_usd)
-```
+![](Frontend/asset/lending-total-borrowed.svg)
 
 - **Maximum Borrowable Amount:** The maximum amount a user can borrow based on their collateral:
 
-```
-Max Borrowable = Total Collateral × LT
-```
+![](Frontend/asset/lending-max-borrowable.svg)
 
 - **Borrowing Condition:** A user can borrow amount `B` only if:
 
-```
-Total Borrowed + B ≤ Total Collateral × maxLTV
-```
+![](Frontend/asset/lending-borrow-condition.svg)
 
 ### **3. Health Factor and Liquidation**
 
 - **Health Factor (HF) Calculation:** The critical metric determining position safety:
 
-```
-HF = (Total Collateral × LT) / Total Borrowed
-```
+![](Frontend/asset/lending-health-factor.svg)
 
 - **Liquidation Condition:** A position becomes liquidatable when:
 
-```
-HF < 1.0
-```
+![](Frontend/asset/lending-liquidation-condition.svg)
 
 - **Liquidation Amount:** When liquidating, the liquidator repays:
 
-```
-Liquidation Amount = Total Borrowed × LCF
-```
+![](Frontend/asset/lending-liquidation-amount.svg)
 
 - **Liquidation Payout:** The liquidator receives collateral worth:
 
-```
-Liquidation Payout = Liquidation Amount × (1 + LB)
-```
+![](Frontend/asset/lending-liquidation-payout.svg)
 
 This incentivizes third-party liquidators to monitor and liquidate unhealthy positions, protecting the protocol from insolvency.
 
@@ -310,11 +272,7 @@ This incentivizes third-party liquidators to monitor and liquidate unhealthy pos
 
 The protocol includes basic interest accrual for deposits using exponential compounding:
 
-```
-Interest = Deposited Amount × e^(interest_rate × time_elapsed)
-```
-
-Where `time_elapsed` is measured in seconds since the last update.
+![](Frontend/asset/lending-interest-accrual.svg)
 
 
 ## Devnet Deployments
