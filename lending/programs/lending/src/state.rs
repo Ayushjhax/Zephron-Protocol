@@ -19,7 +19,7 @@ pub struct Bank {
     pub liquidation_threshold: u64,
     /// Bonus percentage of collateral that can be liquidated
     pub liquidation_bonus: u64,
-    /// Percentage of collateral that can be liquidated
+    /// Percentage of collateral that can be liquida ted
     pub liquidation_close_factor: u64,
     /// Max percentage of collateral that can be borrowed
     pub max_ltv: u64,
