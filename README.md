@@ -182,6 +182,8 @@ This platform serves as the intuitive, regulated front-end to our ecosystem. It 
 
 This is a decentralized lending and borrowing protocol built on Solana that enables users to deposit crypto assets as collateral and borrow against them. It implements a shares-based accounting system for fair distribution of interest and provides automated liquidation mechanisms to protect protocol solvency. The protocol supports multiple assets (SOL, USDC) and uses Pyth oracles for real-time price feeds.
 
+![](Frontend/asset/lending-system-design.svg)
+
 **Program Id:** `33s5M4sRp6LBV8mwHJz1EssyhQ3EHrHnDqQ94N1vy74q`
 
 ### **Core Mechanics & User Flows**
