@@ -40,18 +40,11 @@ pub struct Withdraw<'info> {
     pub system_program: Program<'info, System>,
 }
 
-// 1. CPI transfer from bank's token account to user's token account
-// 2. Calculate new shares to be removed from the bank
-// 3. Update user's deposited amount and total collateral value
-// 4. Update bank's total deposits and total deposit shares
-// 5. Update users health factor ??
-
 pub fn process_withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
     let user = &mut ctx.accounts.user_account;
 
     let deposited_value; 
 
-    // FIXME: Change from if statement to match statement?? Use PDA deserialization to get the mint address??
     if ctx.accounts.mint.to_account_info().key() == user.usdc_address {
         deposited_value = user.deposited_usdc;
     } else {

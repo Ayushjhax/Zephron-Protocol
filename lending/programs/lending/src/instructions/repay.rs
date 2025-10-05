@@ -40,13 +40,11 @@ pub struct Repay<'info> {
     pub system_program: Program<'info, System>,
 }
 
-// Repay function just needs to make a CPI transfer from the user's token account into the bank's token account
 pub fn process_repay(ctx: Context<Repay>, amount: u64) -> Result<()> {
     let user = &mut ctx.accounts.user_account;
 
     let borrowed_asset; 
 
-    // Note: For simplicity, interest fees are not included in this calculation
 
     match ctx.accounts.mint.to_account_info().key() {
         key if key == user.usdc_address => {
@@ -74,9 +72,6 @@ pub fn process_repay(ctx: Context<Repay>, amount: u64) -> Result<()> {
 
     token_interface::transfer_checked(cpi_ctx, amount, decimals)?;
 
-    // Note: The checked_ prefix in Rust is used to perform operations safely by checking for potential 
-    // arithmetic overflow or other errors that could occur during the computation. If such an error occurs, these methods
-    // return None instead of causing a panic.
 
     let bank = &mut ctx.accounts.bank;
 
@@ -96,7 +91,6 @@ pub fn process_repay(ctx: Context<Repay>, amount: u64) -> Result<()> {
         }
     }
 
-    // Add in "update health factor" function here
 
     bank.total_borrowed -= amount;
     bank.total_borrowed_shares -= users_shares;

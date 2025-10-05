@@ -64,12 +64,6 @@ pub struct Liquidate<'info> {
     pub system_program: Program<'info, System>,
 }
 
-// 1. Check if user is undercollateralized
-// 2. Calculate liquidation amount
-// 3. Make a CPI transfer from the user's token account to the bank's token account
-// 4. Update the user and bank states
-// 5. Handle fees and rewards 
-
 pub fn process_liquidate(ctx: Context<Liquidate>) -> Result<()> { 
     let collateral_bank = &mut ctx.accounts.collateral_bank;
     let user = &mut ctx.accounts.user_account;
@@ -88,7 +82,6 @@ pub fn process_liquidate(ctx: Context<Liquidate>) -> Result<()> {
         .get_price_no_older_than(&Clock::get()?, MAXIMUM_AGE, &usdc_feed_id)
         .map_err(|_| error!(ErrorCode::OracleError))?;
 
-    // Note: For simplicity, interest is not being included in these calculations. 
 
     let total_collateral = (sol_price.price as u64 * user.deposited_sol) + (usdc_price.price as u64 * user.deposited_usdc);
     let total_borrowed = (sol_price.price as u64 * user.borrowed_sol) + (usdc_price.price as u64 * user.borrowed_usdc);    
@@ -101,7 +94,6 @@ pub fn process_liquidate(ctx: Context<Liquidate>) -> Result<()> {
 
     let liquidation_amount = total_borrowed * collateral_bank.liquidation_close_factor;
 
-    // liquidator pays back the borrowed amount back to the bank 
 
     let transfer_to_bank = TransferChecked {
         from: ctx.accounts.liquidator_borrowed_token_account.to_account_info(),
@@ -116,7 +108,6 @@ pub fn process_liquidate(ctx: Context<Liquidate>) -> Result<()> {
 
     token_interface::transfer_checked(cpi_ctx_to_bank, liquidation_amount, decimals)?;
 
-    // Transfer liquidation value and bonus to liquidator
     let liquidation_bonus = (liquidation_amount * collateral_bank.liquidation_bonus) + liquidation_amount;
     
     let transfer_to_liquidator = TransferChecked {
