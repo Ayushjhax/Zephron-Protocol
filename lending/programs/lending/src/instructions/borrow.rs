@@ -45,8 +45,14 @@ pub struct Borrow<'info> {
     pub system_program: Program<'info, System>,
 }
 
+// 1. Check if user has enough collateral to borrow
+// 2. Warn if borrowing beyond the safe amount but still allow if within the max borrowable amount
+// 3. Make a CPI transfer from the bank's token account to the user's token account
+// 4. Update the user's borrowed amount and total borrowed value
+// 5. Update the bank's total borrows and total borrow shares
 
-pub fn process_withdraw(ctx: Context<Borrow>, amount: u64) -> Result<()> {
+pub fn process_borrow(ctx: Context<Borrow>, amount: u64) -> Result<()> {
+    // Check if user has enough collateral to borrow
     let bank = &mut ctx.accounts.bank;
     let user = &mut ctx.accounts.user_account;
 
@@ -56,23 +62,24 @@ pub fn process_withdraw(ctx: Context<Borrow>, amount: u64) -> Result<()> {
 
     match ctx.accounts.mint.to_account_info().key() {
         key if key == user.usdc_address => {
-            let sol_feed_id = get_feed_id_from_hex(SOL_USD_FEED_ID);
-            let sol_price = price_update.get_price_no_older_than(&Clock::get()?, MAXIMUM_AGE, &sol_feed_id);
-            let accrued_interest = calculate_accured_interest(user.deposited_sol, bank.interest_rate, user.last_updated)?;
+            let sol_feed_id = get_feed_id_from_hex(SOL_USD_FEED_ID)?; 
+            let sol_price = price_update.get_price_no_older_than(&Clock::get()?, MAXIMUM_AGE, &sol_feed_id)?;
+            let accrued_interest = calculate_accrued_interest(user.deposited_sol, bank.interest_rate, user.last_updated)?;
             total_collateral = sol_price.price as u64 * (user.deposited_sol + accrued_interest);
         },
         _ => {
-            let usdc_feed_id = get_feed_id_from_hex(USDC_USD_FEED_ID);
-            let usdc_price = price_update.get_price_no_older_than(&Clock::get()?, MAXIMUM_AGE, &usdc_feed_id);
-            total_collateral = usdc_price.price as u64 * (user.deposited_usdc + accrued_interest);
+            let usdc_feed_id = get_feed_id_from_hex(USDC_USD_FEED_ID)?;
+            let usdc_price = price_update.get_price_no_older_than(&Clock::get()?, MAXIMUM_AGE, &usdc_feed_id)?;
+            total_collateral = usdc_price.price as u64 * user.deposited_usdc;
+
         }
     }
 
-    let borrowable_amount = total_collateral as u64 * bank.liquidation_threshold;
+    let borrowable_amount = total_collateral as u64 *  bank.liquidation_threshold;
 
     if borrowable_amount < amount {
-        return Err(ErrorCode::InsufficientCollateral.into());
-    }
+        return Err(ErrorCode::OverBorrowableAmount.into());
+    }       
 
     let transfer_cpi_accounts = TransferChecked {
         from: ctx.accounts.bank_token_account.to_account_info(),
@@ -90,19 +97,19 @@ pub fn process_withdraw(ctx: Context<Borrow>, amount: u64) -> Result<()> {
             &[ctx.bumps.bank_token_account],
         ],
     ];
-
     let cpi_ctx = CpiContext::new(cpi_program, transfer_cpi_accounts).with_signer(signer_seeds);
-
     let decimals = ctx.accounts.mint.decimals;
+
+    token_interface::transfer_checked(cpi_ctx, amount, decimals)?;
 
     if bank.total_borrowed == 0 {
         bank.total_borrowed = amount;
         bank.total_borrowed_shares = amount;
-    }
+    } 
 
-    let borrow_ratio = amount.checked_div(total_collateral).unwrap();
+    let borrow_ratio = amount.checked_div(bank.total_borrowed).unwrap();
     let users_shares = bank.total_borrowed_shares.checked_mul(borrow_ratio).unwrap();
-    
+
     bank.total_borrowed += amount;
     bank.total_borrowed_shares += users_shares; 
 
@@ -125,5 +132,4 @@ fn calculate_accrued_interest(deposited: u64, interest_rate: u64, last_update: i
     let time_elapsed = current_time - last_update;
     let new_value = (deposited as f64 * E.powf(interest_rate as f32 * time_elapsed as f32) as f64) as u64;
     Ok(new_value)
-
 }

@@ -40,21 +40,25 @@ pub struct Withdraw<'info> {
     pub system_program: Program<'info, System>,
 }
 
+// 1. CPI transfer from bank's token account to user's token account
+// 2. Calculate new shares to be removed from the bank
+// 3. Update user's deposited amount and total collateral value
+// 4. Update bank's total deposits and total deposit shares
+// 5. Update users health factor ??
+
 pub fn process_withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
     let user = &mut ctx.accounts.user_account;
 
-    let deposit_value;
+    let deposited_value; 
 
-    match ctx.accounts.mint.to_account_info().key() {
-        key if key == user.usdc_address => {
-            deposit_value = user.deposited_usdc;
-        },
-        _ => {
-            deposit_value = user.deposited_sol;
-        }
+    // FIXME: Change from if statement to match statement?? Use PDA deserialization to get the mint address??
+    if ctx.accounts.mint.to_account_info().key() == user.usdc_address {
+        deposited_value = user.deposited_usdc;
+    } else {
+        deposited_value = user.deposited_sol;
     }
-    
-    if deposit_value < amount {
+
+    if amount > deposited_value {
         return Err(ErrorCode::InsufficientFunds.into());
     }
 
@@ -63,18 +67,17 @@ pub fn process_withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
         mint: ctx.accounts.mint.to_account_info(),
         to: ctx.accounts.user_token_account.to_account_info(),
         authority: ctx.accounts.bank_token_account.to_account_info(),
-    }
+    };
 
     let cpi_program = ctx.accounts.token_program.to_account_info();
     let mint_key = ctx.accounts.mint.key();
-    let signer_seeds; &[&[&[u8]]] = &[
+    let signer_seeds: &[&[&[u8]]] = &[
         &[
             b"treasury",
             mint_key.as_ref(),
             &[ctx.bumps.bank_token_account],
         ],
     ];
-
     let cpi_ctx = CpiContext::new(cpi_program, transfer_cpi_accounts).with_signer(signer_seeds);
 
     let decimals = ctx.accounts.mint.decimals;
@@ -82,19 +85,18 @@ pub fn process_withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
     token_interface::transfer_checked(cpi_ctx, amount, decimals)?;
 
     let bank = &mut ctx.accounts.bank;
-
-    let share_to_remove = (amount as f64 / bank.total_deposits as f64) * bank.total_deposit_shares as f64;
+    let shares_to_remove = (amount as f64 / bank.total_deposits as f64) * bank.total_deposit_shares as f64;
 
     let user = &mut ctx.accounts.user_account;
-
+    
     if ctx.accounts.mint.to_account_info().key() == user.usdc_address {
-        user.deposited_usdc -= share_to_remove as u64;
+        user.deposited_usdc -= shares_to_remove as u64;
     } else {
-        user.deposited_sol -= share_to_remove as u64;
+        user.deposited_sol -= shares_to_remove as u64;
     }
 
     bank.total_deposits -= amount;
-    bank.total_deposit_shares -= share_to_remove as u64;    
-
-    OK(())
+    bank.total_deposit_shares -= shares_to_remove as u64;
+    
+    Ok(())    
 }
