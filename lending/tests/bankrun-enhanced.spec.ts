@@ -3,38 +3,16 @@ import { BN, Program } from "@coral-xyz/anchor";
 import { BankrunProvider } from "anchor-bankrun";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { createAccount, createMint, mintTo, getAccount } from "spl-token-bankrun";
+import { PythSolanaReceiver } from "@pythnetwork/pyth-solana-receiver";
 
 import { startAnchor, BanksClient, ProgramTestContext } from "solana-bankrun";
 
 import { PublicKey, Keypair, Connection } from "@solana/web3.js";
 
-// Mock Pyth implementation to avoid dependency issues
-class PythSolanaReceiver {
-  constructor(options: { connection: any; wallet: any }) {
-    console.log("🔧 Mock PythSolanaReceiver initialized");
-  }
-
-  getPriceFeedAccountAddress(version: number, feedId: string): { toBase58(): string } {
-    // Return a mock price feed account address
-    const mockAddress = "7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE";
-    return { toBase58: () => mockAddress };
-  }
-}
-
 // @ts-ignore
 import IDL from "../target/idl/lending_protocol.json";
 import { LendingProtocol } from "../target/types/lending_protocol";
 import { BankrunContextWrapper } from "../bankrun-utils/bankrunConnection";
-
-// Helper function to create Solana Explorer links
-function getExplorerLink(txSignature: string | any, cluster: string = "devnet"): string {
-  if (typeof txSignature === 'string') {
-    return `https://explorer.solana.com/tx/${txSignature}?cluster=${cluster}`;
-  } else if (txSignature && typeof txSignature === 'object') {
-    return `https://explorer.solana.com/?cluster=${cluster}`;
-  }
-  return `https://explorer.solana.com/?cluster=${cluster}`;
-}
 
 describe("Lending Smart Contract Tests - Enhanced Version", async () => {
   let signer: Keypair;
@@ -60,11 +38,29 @@ describe("Lending Smart Contract Tests - Enhanced Version", async () => {
   const SOL_PRICE_FEED_ID = "0xeaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a";
   const USDC_PRICE_FEED_ID = "0xeaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a";
 
-  // Setup Bankrun context
+  // Helper function to create Solana Explorer links
+  function getExplorerLink(txSignature: string | any, cluster: string = "devnet"): string {
+    if (typeof txSignature === 'string') {
+      return `https://explorer.solana.com/tx/${txSignature}?cluster=${cluster}`;
+    } else if (txSignature && typeof txSignature === 'object') {
+      return `https://explorer.solana.com/?cluster=${cluster}`;
+    }
+    return `https://explorer.solana.com/?cluster=${cluster}`;
+  }
+
+  // Setup Bankrun context with real Pyth data
+  const devnetConnection = new Connection("https://api.devnet.solana.com");
+  const accountInfo = await devnetConnection.getAccountInfo(pyth);
+
   context = await startAnchor(
     "",
     [{ name: "lending", programId: new PublicKey(IDL.address) }],
-    []
+    [
+      {
+        address: pyth,
+        info: accountInfo,
+      },
+    ]
   );
   provider = new BankrunProvider(context);
   bankrunContextWrapper = new BankrunContextWrapper(context);
@@ -80,9 +76,14 @@ describe("Lending Smart Contract Tests - Enhanced Version", async () => {
     .toBase58();
 
   const solUsdPriceFeedAccountPubkey = new PublicKey(solUsdPriceFeedAccount);
+  const feedAccountInfo = await devnetConnection.getAccountInfo(
+    solUsdPriceFeedAccountPubkey
+  );
+
+  context.setAccount(solUsdPriceFeedAccountPubkey, feedAccountInfo);
 
   console.log("🔧 Price Feed Account:", solUsdPriceFeedAccount);
-  console.log("🔧 Using Mock Pyth Implementation");
+  console.log("🔧 Pyth Account Info:", accountInfo);
 
   program = new Program<LendingProtocol>(IDL as LendingProtocol, provider);
   banksClient = context.banksClient;
@@ -187,11 +188,10 @@ describe("Lending Smart Contract Tests - Enhanced Version", async () => {
 
     console.log("✅ Mint to USDC Treasury:", mintTx);
     console.log("🔗 View Treasury Funding on Solana Explorer:", getExplorerLink(mintTx));
-    console.log("📝 Note: Treasury funding uses test environment - visit Solana Explorer to see live transactions");
 
     // Verify bank account
     const bankInfo = await program.account.bank.fetch(usdcBankAccount);
-    console.log("USDC Bank Info:", {
+    console.log("🏦 USDC Bank Info:", {
       authority: bankInfo.authority.toBase58(),
       mintAddress: bankInfo.mintAddress.toBase58(),
       liquidationThreshold: bankInfo.liquidationThreshold.toString(),
@@ -204,7 +204,7 @@ describe("Lending Smart Contract Tests - Enhanced Version", async () => {
       banksClient,
       usdcTreasuryAccount
     );
-    console.log("USDC Treasury Balance:", treasuryBalance.amount.toString());
+    console.log("💰 USDC Treasury Balance:", treasuryBalance.amount.toString());
   });
 
   it("Test Init and Fund SOL Bank", async () => {
@@ -220,7 +220,7 @@ describe("Lending Smart Contract Tests - Enhanced Version", async () => {
     console.log("✅ Create SOL Bank Account:", initSOLBankTx);
     console.log("🔗 View SOL Bank Creation on Solana Explorer:", getExplorerLink(initSOLBankTx));
 
-    // Fund the treasury account directly
+    // Fund the treasury account
     const amount = new BN(1000 * 10 ** 9); // 1000 SOL
     const mintSOLTx = await mintTo(
       // @ts-ignore
@@ -293,7 +293,6 @@ describe("Lending Smart Contract Tests - Enhanced Version", async () => {
     console.log("🔗 View USDC Mint on Solana Explorer:", getExplorerLink(mintUSDCToUser));
     console.log("✅ Mint SOL to User:", mintSOLToUser);
     console.log("🔗 View SOL Mint on Solana Explorer:", getExplorerLink(mintSOLToUser));
-    console.log("📝 Note: User minting uses test environment - visit Solana Explorer to see live transactions");
 
     // Verify balances
     const usdcBalance = await getAccount(
@@ -307,8 +306,8 @@ describe("Lending Smart Contract Tests - Enhanced Version", async () => {
       solTokenAccount
     );
 
-    console.log("User USDC Balance:", usdcBalance.amount.toString());
-    console.log("User SOL Balance:", solBalance.amount.toString());
+    console.log("👤 User USDC Balance:", usdcBalance.amount.toString());
+    console.log("👤 User SOL Balance:", solBalance.amount.toString());
   });
 
   it("Test Deposit USDC", async () => {
@@ -327,14 +326,14 @@ describe("Lending Smart Contract Tests - Enhanced Version", async () => {
 
     // Verify user account state
     const userInfo = await program.account.user.fetch(userAccount);
-    console.log("User after USDC deposit:", {
+    console.log("👤 User after USDC deposit:", {
       depositedUsdc: userInfo.depositedUsdc.toString(),
       depositedUsdcShares: userInfo.depositedUsdcShares.toString()
     });
 
     // Verify bank state
     const bankInfo = await program.account.bank.fetch(usdcBankAccount);
-    console.log("USDC Bank after deposit:", {
+    console.log("🏦 USDC Bank after deposit:", {
       totalDeposits: bankInfo.totalDeposits.toString(),
       totalDepositShares: bankInfo.totalDepositShares.toString()
     });
@@ -356,14 +355,14 @@ describe("Lending Smart Contract Tests - Enhanced Version", async () => {
 
     // Verify user account state
     const userInfo = await program.account.user.fetch(userAccount);
-    console.log("User after SOL deposit:", {
+    console.log("👤 User after SOL deposit:", {
       depositedSol: userInfo.depositedSol.toString(),
       depositedSolShares: userInfo.depositedSolShares.toString()
     });
 
     // Verify bank state
     const bankInfo = await program.account.bank.fetch(solBankAccount);
-    console.log("SOL Bank after deposit:", {
+    console.log("🏦 SOL Bank after deposit:", {
       totalDeposits: bankInfo.totalDeposits.toString(),
       totalDepositShares: bankInfo.totalDepositShares.toString()
     });
@@ -456,14 +455,14 @@ describe("Lending Smart Contract Tests - Enhanced Version", async () => {
 
     // Verify user account state
     const userInfo = await program.account.user.fetch(userAccount);
-    console.log("User after USDC withdraw:", {
+    console.log("👤 User after USDC withdraw:", {
       depositedUsdc: userInfo.depositedUsdc.toString(),
       depositedUsdcShares: userInfo.depositedUsdcShares.toString()
     });
 
     // Verify bank state
     const bankInfo = await program.account.bank.fetch(usdcBankAccount);
-    console.log("USDC Bank after withdraw:", {
+    console.log("🏦 USDC Bank after withdraw:", {
       totalDeposits: bankInfo.totalDeposits.toString(),
       totalDepositShares: bankInfo.totalDepositShares.toString()
     });
@@ -474,7 +473,7 @@ describe("Lending Smart Contract Tests - Enhanced Version", async () => {
       banksClient,
       usdcTokenAccount
     );
-    console.log("User USDC Balance after withdraw:", userUsdcBalance.amount.toString());
+    console.log("👤 User USDC Balance after withdraw:", userUsdcBalance.amount.toString());
   });
 
   it("Test Withdraw SOL", async () => {
@@ -493,14 +492,14 @@ describe("Lending Smart Contract Tests - Enhanced Version", async () => {
 
     // Verify user account state
     const userInfo = await program.account.user.fetch(userAccount);
-    console.log("User after SOL withdraw:", {
+    console.log("👤 User after SOL withdraw:", {
       depositedSol: userInfo.depositedSol.toString(),
       depositedSolShares: userInfo.depositedSolShares.toString()
     });
 
     // Verify bank state
     const bankInfo = await program.account.bank.fetch(solBankAccount);
-    console.log("SOL Bank after withdraw:", {
+    console.log("🏦 SOL Bank after withdraw:", {
       totalDeposits: bankInfo.totalDeposits.toString(),
       totalDepositShares: bankInfo.totalDepositShares.toString()
     });
@@ -511,15 +510,15 @@ describe("Lending Smart Contract Tests - Enhanced Version", async () => {
       banksClient,
       solTokenAccount
     );
-    console.log("User SOL Balance after withdraw:", userSolBalance.amount.toString());
+    console.log("👤 User SOL Balance after withdraw:", userSolBalance.amount.toString());
   });
 
   it("Final State Verification", async () => {
-    console.log("\n=== FINAL STATE VERIFICATION ===");
+    console.log("\n=== 🎯 FINAL STATE VERIFICATION ===");
     
     // Final user state
     const userInfo = await program.account.user.fetch(userAccount);
-    console.log("Final User State:", {
+    console.log("👤 Final User State:", {
       owner: userInfo.owner.toBase58(),
       depositedUsdc: userInfo.depositedUsdc.toString(),
       depositedSol: userInfo.depositedSol.toString(),
@@ -530,7 +529,7 @@ describe("Lending Smart Contract Tests - Enhanced Version", async () => {
 
     // Final bank states
     const usdcBankInfo = await program.account.bank.fetch(usdcBankAccount);
-    console.log("Final USDC Bank State:", {
+    console.log("🏦 Final USDC Bank State:", {
       totalDeposits: usdcBankInfo.totalDeposits.toString(),
       totalDepositShares: usdcBankInfo.totalDepositShares.toString(),
       totalBorrowed: usdcBankInfo.totalBorrowed.toString(),
@@ -538,7 +537,7 @@ describe("Lending Smart Contract Tests - Enhanced Version", async () => {
     });
 
     const solBankInfo = await program.account.bank.fetch(solBankAccount);
-    console.log("Final SOL Bank State:", {
+    console.log("🏦 Final SOL Bank State:", {
       totalDeposits: solBankInfo.totalDeposits.toString(),
       totalDepositShares: solBankInfo.totalDepositShares.toString(),
       totalBorrowed: solBankInfo.totalBorrowed.toString(),
@@ -556,12 +555,22 @@ describe("Lending Smart Contract Tests - Enhanced Version", async () => {
       banksClient,
       solTokenAccount
     );
+    const treasuryUsdcBalance = await getAccount(
+      // @ts-ignore
+      banksClient,
+      usdcTreasuryAccount
+    );
+    const treasurySolBalance = await getAccount(
+      // @ts-ignore
+      banksClient,
+      solTreasuryAccount
+    );
 
     console.log("💰 Final Token Balances:", {
       userUsdc: userUsdcBalance.amount.toString(),
       userSol: userSolBalance.amount.toString(),
-      treasuryUsdc: "N/A (API compatibility issue)",
-      treasurySol: "N/A (API compatibility issue)"
+      treasuryUsdc: treasuryUsdcBalance.amount.toString(),
+      treasurySol: treasurySolBalance.amount.toString()
     });
 
     console.log("\n🎯 ENHANCED TEST SUITE COMPLETED:");

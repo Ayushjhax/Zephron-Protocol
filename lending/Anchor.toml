@@ -6,14 +6,18 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-lending = "CdZeD33fXsAHfZYS8jdxg4qHgXYJwBQ1Bv6GJyETtLST"
+lending = "33s5M4sRp6LBV8mwHJz1EssyhQ3EHrHnDqQ94N1vy74q"
+
+[programs.devnet]
+lending = "33s5M4sRp6LBV8mwHJz1EssyhQ3EHrHnDqQ94N1vy74q"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "Devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/bankrun.spec.ts"
+test-onchain = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/onchain.spec.ts"
