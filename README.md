@@ -17,6 +17,9 @@
 - [Product Deep Dive 2: Digital Portfolio Platform](#product-deep-dive-2-the-digital-portfolio-platform)
   - [Core Mechanics & User Flows](#core-mechanics--user-flows-1)
   - [Mathematical Formulas](#mathematical-formulas-1)
+- [Product Deep Dive 3: Lending Protocol](#product-deep-dive-3-the-lending-protocol)
+  - [Core Mechanics & User Flows](#core-mechanics--user-flows-2)
+  - [Mathematical Formulas](#mathematical-formulas-2)
 - [Devnet Deployments](#devnet-deployments)
 - [Repository Structure](#repository-structure)
 - [Getting Started](#getting-started)
@@ -175,6 +178,143 @@ This platform serves as the intuitive, regulated front-end to our ecosystem. It 
 ![](Frontend/asset/last.png)
 
 
+## **Product Deep Dive 3: The Lending Protocol**
+
+This is a decentralized lending and borrowing protocol built on Solana that enables users to deposit crypto assets as collateral and borrow against them. It implements a shares-based accounting system for fair distribution of interest and provides automated liquidation mechanisms to protect protocol solvency. The protocol supports multiple assets (SOL, USDC) and uses Pyth oracles for real-time price feeds.
+
+**Program Id:** `33s5M4sRp6LBV8mwHJz1EssyhQ3EHrHnDqQ94N1vy74q`
+
+### **Core Mechanics & User Flows**
+
+1. **Initialize Bank & User:** The protocol administrator initializes a Bank for each supported asset (SOL, USDC) with parameters like liquidation threshold and max LTV. Users create their User account to track their positions across all assets.
+
+2. **Deposit Collateral:** Users deposit tokens into the protocol's bank vault. Deposits are tracked using a shares-based system, where users receive deposit shares proportional to their contribution. This ensures fair distribution of interest accrued over time.
+
+3. **Borrow Assets:** Users can borrow assets up to their maximum borrowing capacity, determined by their total collateral value and the bank's max LTV parameter. Borrowed positions are also tracked using shares to handle interest accrual fairly across all borrowers.
+
+4. **Repay Borrowed Assets:** Users repay their borrowed amounts plus accrued interest. Repayments reduce their borrow shares and improve their health factor, unlocking more collateral.
+
+5. **Withdraw Collateral:** Users can withdraw deposited collateral as long as their position remains sufficiently collateralized above the liquidation threshold.
+
+6. **Liquidation:** When a user's health factor falls below 1.0 (indicating under-collateralization), liquidators can step in to repay a portion of the user's debt in exchange for their collateral plus a liquidation bonus. This protects the protocol from bad debt.
+
+**Key Variables:**
+
+- Dsol: Amount of SOL deposited by user (in lamports).
+- Dusdc: Amount of USDC deposited by user.
+- Bsol: Amount of SOL borrowed by user.
+- Busdc: Amount of USDC borrowed by user.
+- Psol_usd: Price of SOL in USD from Pyth oracle.
+- Pusdc_usd: Price of USDC in USD from Pyth oracle.
+- LT: Liquidation Threshold (e.g., 0.8 or 80%).
+- maxLTV: Maximum Loan-to-Value ratio (e.g., 0.75 or 75%).
+- LB: Liquidation Bonus percentage (e.g., 0.05 or 5%).
+- LCF: Liquidation Close Factor (e.g., 0.5 or 50%).
+- HF: Health Factor, ratio of collateral value to borrowed value.
+- TD: Total Deposits in a bank.
+- TDS: Total Deposit Shares in a bank.
+- TB: Total Borrowed from a bank.
+- TBS: Total Borrow Shares in a bank.
+
+### **1. Shares-Based Accounting**
+
+The protocol uses a shares system to fairly distribute interest and fees among depositors and borrowers.
+
+- **Deposit Shares Calculation:** When a user deposits amount `A` into a bank:
+
+```
+If TD = 0 (first deposit):
+  User Shares = A
+  TDS = A
+  TD = A
+
+Otherwise:
+  Deposit Ratio = A / TD
+  User Shares = TDS × Deposit Ratio
+  TDS = TDS + User Shares
+  TD = TD + A
+```
+
+- **Borrow Shares Calculation:** When a user borrows amount `B`:
+
+```
+If TB = 0 (first borrow):
+  User Borrow Shares = B
+  TBS = B
+  TB = B
+
+Otherwise:
+  Borrow Ratio = B / TB
+  User Borrow Shares = TBS × Borrow Ratio
+  TBS = TBS + User Borrow Shares
+  TB = TB + B
+```
+
+### **2. Collateral and Borrowing Calculations**
+
+- **Total Collateral Value in USD:**
+
+```
+Total Collateral = (Dsol × Psol_usd) + (Dusdc × Pusdc_usd)
+```
+
+- **Total Borrowed Value in USD:**
+
+```
+Total Borrowed = (Bsol × Psol_usd) + (Busdc × Pusdc_usd)
+```
+
+- **Maximum Borrowable Amount:** The maximum amount a user can borrow based on their collateral:
+
+```
+Max Borrowable = Total Collateral × LT
+```
+
+- **Borrowing Condition:** A user can borrow amount `B` only if:
+
+```
+Total Borrowed + B ≤ Total Collateral × maxLTV
+```
+
+### **3. Health Factor and Liquidation**
+
+- **Health Factor (HF) Calculation:** The critical metric determining position safety:
+
+```
+HF = (Total Collateral × LT) / Total Borrowed
+```
+
+- **Liquidation Condition:** A position becomes liquidatable when:
+
+```
+HF < 1.0
+```
+
+- **Liquidation Amount:** When liquidating, the liquidator repays:
+
+```
+Liquidation Amount = Total Borrowed × LCF
+```
+
+- **Liquidation Payout:** The liquidator receives collateral worth:
+
+```
+Liquidation Payout = Liquidation Amount × (1 + LB)
+```
+
+This incentivizes third-party liquidators to monitor and liquidate unhealthy positions, protecting the protocol from insolvency.
+
+### **4. Interest Accrual (Simplified Implementation)**
+
+The protocol includes basic interest accrual for deposits using exponential compounding:
+
+```
+Interest = Deposited Amount × e^(interest_rate × time_elapsed)
+```
+
+Where `time_elapsed` is measured in seconds since the last update.
+
+
 ## Devnet Deployments
 - **Program ID**: `EGtHEv1xJP3aA3fT5JVB7H2UXoR6s7rB6iYjkifDqdvQ`
 - **Key Transactions**:
@@ -200,6 +340,10 @@ This platform serves as the intuitive, regulated front-end to our ecosystem. It 
 /program
   programs/gold/       # Anchor program for GOLD protocol
   tests/               # Anchor mocha tests
+  target/idl/          # IDL output
+/lending
+  programs/lending/    # Anchor program for lending protocol
+  tests/               # Test suite (bankrun & onchain)
   target/idl/          # IDL output
 ```
 
@@ -238,7 +382,14 @@ npm run dev
 
 ### Build & Test the Program
 ```bash
+# For the GOLD protocol
 cd program
+npm install
+anchor build
+npm test
+
+# For the Lending protocol
+cd lending
 npm install
 anchor build
 npm test
@@ -246,9 +397,15 @@ npm test
 
 ### Deploy to Devnet
 ```bash
+# For the GOLD protocol
 cd program
 anchor deploy
 # Verify IDL at target/idl/gold.json
+
+# For the Lending protocol
+cd lending
+anchor deploy
+# Verify IDL at target/idl/lending_protocol.json
 ```
 
 
