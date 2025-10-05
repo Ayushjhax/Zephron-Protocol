@@ -76,11 +76,17 @@ pub fn process_liquidate(ctx: Context<Liquidate>) -> Result<()> {
 
     let price_update = &mut ctx.accounts.price_update;
 
-    let sol_feed_id = get_feed_id_from_hex(SOL_USD_FEED_ID)?; 
-    let usdc_feed_id = get_feed_id_from_hex(USDC_USD_FEED_ID)?;
+    let sol_feed_id = get_feed_id_from_hex(SOL_USD_FEED_ID)
+        .map_err(|_| error!(ErrorCode::OracleError))?; 
+    let usdc_feed_id = get_feed_id_from_hex(USDC_USD_FEED_ID)
+        .map_err(|_| error!(ErrorCode::OracleError))?;
 
-    let sol_price = price_update.get_price_no_older_than(&Clock::get()?, MAXIMUM_AGE, &sol_feed_id)?;
-    let usdc_price = price_update.get_price_no_older_than(&Clock::get()?, MAXIMUM_AGE, &usdc_feed_id)?;
+    let sol_price = price_update
+        .get_price_no_older_than(&Clock::get()?, MAXIMUM_AGE, &sol_feed_id)
+        .map_err(|_| error!(ErrorCode::OracleError))?;
+    let usdc_price = price_update
+        .get_price_no_older_than(&Clock::get()?, MAXIMUM_AGE, &usdc_feed_id)
+        .map_err(|_| error!(ErrorCode::OracleError))?;
 
     // Note: For simplicity, interest is not being included in these calculations. 
 

@@ -3,6 +3,7 @@ use std::f32::consts::E;
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token_interface::{ self, Mint, TokenAccount, TokenInterface, TransferChecked };
+// use pyth_solana_receiver_sdk_legacy::price_update::{get_feed_id_from_hex, PriceUpdateV2};
 use pyth_solana_receiver_sdk::price_update::{get_feed_id_from_hex, PriceUpdateV2};
 use crate::constants::{MAXIMUM_AGE, SOL_USD_FEED_ID, USDC_USD_FEED_ID};
 use crate::state::*;
@@ -62,14 +63,20 @@ pub fn process_borrow(ctx: Context<Borrow>, amount: u64) -> Result<()> {
 
     match ctx.accounts.mint.to_account_info().key() {
         key if key == user.usdc_address => {
-            let sol_feed_id = get_feed_id_from_hex(SOL_USD_FEED_ID)?; 
-            let sol_price = price_update.get_price_no_older_than(&Clock::get()?, MAXIMUM_AGE, &sol_feed_id)?;
+            let sol_feed_id = get_feed_id_from_hex(SOL_USD_FEED_ID)
+                .map_err(|_| error!(ErrorCode::OracleError))?; 
+            let sol_price = price_update
+                .get_price_no_older_than(&Clock::get()?, MAXIMUM_AGE, &sol_feed_id)
+                .map_err(|_| error!(ErrorCode::OracleError))?;
             let accrued_interest = calculate_accrued_interest(user.deposited_sol, bank.interest_rate, user.last_updated)?;
             total_collateral = sol_price.price as u64 * (user.deposited_sol + accrued_interest);
         },
         _ => {
-            let usdc_feed_id = get_feed_id_from_hex(USDC_USD_FEED_ID)?;
-            let usdc_price = price_update.get_price_no_older_than(&Clock::get()?, MAXIMUM_AGE, &usdc_feed_id)?;
+            let usdc_feed_id = get_feed_id_from_hex(USDC_USD_FEED_ID)
+                .map_err(|_| error!(ErrorCode::OracleError))?;
+            let usdc_price = price_update
+                .get_price_no_older_than(&Clock::get()?, MAXIMUM_AGE, &usdc_feed_id)
+                .map_err(|_| error!(ErrorCode::OracleError))?;
             total_collateral = usdc_price.price as u64 * user.deposited_usdc;
 
         }
