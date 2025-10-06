@@ -180,7 +180,7 @@ This platform serves as the intuitive, regulated front-end to our ecosystem. It 
 
 ## **Product Deep Dive 3: The Lending Protocol**
 
-This is a decentralized lending and borrowing protocol built on Solana that enables users to deposit crypto assets as collateral and borrow against them. It implements a shares-based accounting system for fair distribution of interest and provides automated liquidation mechanisms to protect protocol solvency. The protocol supports multiple assets (SOL, USDC) and uses Pyth oracles for real-time price feeds.
+This is a decentralized lending and borrowing protocol built on Solana that enables users to deposit GOLD as collateral and borrow SOL/USDC against them. It implements a shares-based accounting system for fair distribution of interest and provides automated liquidation mechanisms to protect protocol solvency. The protocol uses Pyth oracles for real-time price feeds.
 
 ![](Frontend/asset/lending-system-design.svg)
 
@@ -190,13 +190,13 @@ This is a decentralized lending and borrowing protocol built on Solana that enab
 
 1. **Initialize Bank & User:** The protocol administrator initializes a Bank for each supported asset (SOL, USDC) with parameters like liquidation threshold and max LTV. Users create their User account to track their positions across all assets.
 
-2. **Deposit Collateral:** Users deposit tokens into the protocol's bank vault. Deposits are tracked using a shares-based system, where users receive deposit shares proportional to their contribution. This ensures fair distribution of interest accrued over time.
+2. **Deposit Collateral:** Users deposit tokens into the protocol's bank vault. Deposits are tracked using a shares-based system, where users receive deposit shares proportional to their contribution. 
 
 3. **Borrow Assets:** Users can borrow assets up to their maximum borrowing capacity, determined by their total collateral value and the bank's max LTV parameter. Borrowed positions are also tracked using shares to handle interest accrual fairly across all borrowers.
 
-4. **Repay Borrowed Assets:** Users repay their borrowed amounts plus accrued interest. Repayments reduce their borrow shares and improve their health factor, unlocking more collateral.
+4. **Repay Borrowed Assets:** Users repay their borrowed amounts plus accrued interest. Repayments reduce their borrow shares and improve their health factor, unlocking more collateral(GOLD).
 
-5. **Withdraw Collateral:** Users can withdraw deposited collateral as long as their position remains sufficiently collateralized above the liquidation threshold.
+5. **Withdraw Collateral:** Users can withdraw deposited collateral(GOLD) as long as their position remains sufficiently collateralized above the liquidation threshold.
 
 6. **Liquidation:** When a user's health factor falls below 1.0 (indicating under-collateralization), liquidators can step in to repay a portion of the user's debt in exchange for their collateral plus a liquidation bonus. This protects the protocol from bad debt.
 
