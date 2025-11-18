@@ -10,6 +10,7 @@
 ## Table of Contents
 - [The Problem](#the-problem)
 - [Our Solution](#our-solution-a-unified-ecosystem-and-protocol-for-programmable-gold)
+- [Architecture](#architecture)
 - [Product Deep Dive 1: Programmable Gold Protocol](#product-deep-dive-1-with-mvp-the-programmable-gold-on-chain-protocol)
   - [Core Mechanics & User Flows](#core-mechanics--user-flows)
   - [Mathematical Formulas](#mathematical-formulas)
@@ -61,6 +62,21 @@ We are building a vertically integrated, two-pronged solution that solves the co
 - **Unlocking Liquidity & Yield (Lending):** The core utility of our ecosystem is the ability to unlock the value of your assets without selling them. Users can lock their tokenized gold as collateral to take out instant loans, providing immediate liquidity. This creates a powerful engine for both borrowing and yield generation. All lending is governed by a strict, real-time mathematical model to ensure system solvency at all times.
 
 ![](Frontend/asset/pd1.png)
+
+## Architecture
+
+The following diagram illustrates the complete system architecture of the Zephron Protocol, showing the integration between the on-chain smart contracts, oracle systems, and user interactions:
+
+[![Zephron Protocol Architecture](https://drive.google.com/uc?export=view&id=1WSLu7h1KpB-w_XoDy9GrvBpK9OXBRguS)](https://drive.google.com/file/d/1WSLu7h1KpB-w_XoDy9GrvBpK9OXBRguS/view?usp=sharing)
+
+**Architecture Components:**
+- **On-Chain Program**: Solana Anchor program implementing the GOLD protocol and lending pool
+- **Oracle Integration**: Pyth Network for real-time price feeds (GOLD/USD, SOL/USD)
+- **Token System**: Token-2022 program for GOLD token management
+- **Lending Pool**: Integrated AMM-style pool with utilization-based interest rates
+- **User Accounts**: PDA-based collateral accounts, lender positions, and borrower positions
+
+*[View full resolution diagram](https://drive.google.com/file/d/1WSLu7h1KpB-w_XoDy9GrvBpK9OXBRguS/view?usp=sharing)*
 
 ## Product Deep Dive 1 with MVP: The Programmable Gold On-Chain Protocol
 
