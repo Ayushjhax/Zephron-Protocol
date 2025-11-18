@@ -8,4 +8,8 @@ pub enum CustomError {
     AboveMinimumHealthFactor,
     #[msg("Price should not be negative")]
     InvalidPrice,
+    #[msg("Insufficient Funds")]
+    InsufficientFunds,
+    #[msg("Insufficient Borrow Capacity")]
+    InsufficientBorrowCapacity,
 }

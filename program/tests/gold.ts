@@ -165,4 +165,169 @@ describe("gold", () => {
       .rpc();
     console.log("Your transaction signature", tx, "https://explorer.solana.com/tx/" + tx + "?cluster=devnet");
   });
+  
+  const [lendingPool] = anchor.web3.PublicKey.findProgramAddressSync(
+    [seed("lending_pool")],
+    program.programId
+  );
+  const [lenderPosition] = anchor.web3.PublicKey.findProgramAddressSync(
+    [seed("lender_position"), wallet.publicKey.toBuffer()],
+    program.programId
+  );
+  const [borrowerPosition] = anchor.web3.PublicKey.findProgramAddressSync(
+    [seed("borrower_position"), wallet.publicKey.toBuffer()],
+    program.programId
+  );
+  const [lendingPoolVault] = anchor.web3.PublicKey.findProgramAddressSync(
+    [seed("lending_pool"), mintAccount.toBuffer()],
+    program.programId
+  );
+
+  it("Deposit tokens to lending pool", async () => {
+    // First mint more tokens if needed, then deposit to lending pool
+    const depositAmount = 50_000; // 0.00005 GOLD tokens (half of what we have)
+    
+    const tx = await program.methods
+      .depositTokens(new BN(depositAmount))
+      .accounts({
+        lender: wallet.publicKey,
+        lendingPool,
+        lenderPosition,
+        borrowerPosition,
+        mintAccount,
+        lenderTokenAccount: tokenAccount,
+        lendingPoolVault,
+        tokenProgram,
+        associatedTokenProgram,
+        systemProgram,
+      })
+      .signers([])
+      .rpc();
+    
+    console.log("\nYour transaction signature", tx);
+    console.log("https://explorer.solana.com/tx/" + tx + "?cluster=devnet");
+  });
+
+  it("Borrow tokens from lending pool", async () => {
+    const borrowAmount = 30_000; // 0.00003 GOLD tokens (60% of deposit, under 75% LTV)
+    
+    const tx = await program.methods
+      .borrowTokens(new BN(borrowAmount))
+      .accounts({
+        borrower: wallet.publicKey,
+        configAccount,
+        lendingPool,
+        borrowerPosition,
+        mintAccount,
+        borrowerTokenAccount: tokenAccount,
+        tokenProgram,
+        associatedTokenProgram,
+        systemProgram,
+      })
+      .signers([])
+      .rpc();
+    
+    console.log("\nYour transaction signature", tx);
+    console.log("https://explorer.solana.com/tx/" + tx + "?cluster=devnet");
+  });
+
+  it("Repay tokens to lending pool", async () => {
+    const repayAmount = 15_000; // 0.000015 GOLD tokens (half of borrowed)
+    
+    const tx = await program.methods
+      .repayTokens(new BN(repayAmount))
+      .accounts({
+        borrower: wallet.publicKey,
+        configAccount,
+        lendingPool,
+        borrowerPosition,
+        mintAccount,
+        borrowerTokenAccount: tokenAccount,
+        tokenProgram,
+        associatedTokenProgram,
+        systemProgram,
+      })
+      .signers([])
+      .rpc();
+    
+    console.log("\nYour transaction signature", tx);
+    console.log("https://explorer.solana.com/tx/" + tx + "?cluster=devnet");
+  });
+
+  it("Withdraw tokens from lending pool", async () => {
+    const withdrawAmount = 20_000; // 0.00002 GOLD tokens
+    
+    const tx = await program.methods
+      .withdrawTokens(new BN(withdrawAmount))
+      .accounts({
+        lender: wallet.publicKey,
+        lendingPool,
+        lenderPosition,
+        borrowerPosition,
+        mintAccount,
+        lenderTokenAccount: tokenAccount,
+        lendingPoolVault,
+        tokenProgram,
+        associatedTokenProgram,
+        systemProgram,
+      })
+      .signers([])
+      .rpc();
+    
+    console.log("\nYour transaction signature", tx);
+    console.log("https://explorer.solana.com/tx/" + tx + "?cluster=devnet");
+  });
+
+  it("Transaction that combines minting and lending deposit", async () => {
+    // This combines minting and lending deposit in a single transaction
+    const amountCollateral = 500_000_000; // 0.5 SOL collateral
+    const amountToMint = 200_000; // 0.0002 GOLD tokens
+    const depositAmount = 100_000; // 0.0001 GOLD tokens to deposit to lending pool
+    
+    // Build a transaction with both instructions
+    const mintIx = await program.methods
+      .depositCollateralAndMint(new BN(amountCollateral), new BN(amountToMint))
+      .accounts({
+        depositor: wallet.publicKey,
+        configAccount,
+        collateralAccount,
+        solAccount,
+        mintAccount,
+        goldPriceUpdate: goldUsdPriceFeedAccount,
+        solPriceUpdate: solUsdPriceFeedAccount,
+        tokenAccount,
+        tokenProgram,
+        associatedTokenProgram,
+        systemProgram,
+      })
+      .instruction();
+    
+    const depositIx = await program.methods
+      .depositTokens(new BN(depositAmount))
+      .accounts({
+        lender: wallet.publicKey,
+        lendingPool,
+        lenderPosition,
+        borrowerPosition,
+        mintAccount,
+        lenderTokenAccount: tokenAccount,
+        lendingPoolVault,
+        tokenProgram,
+        associatedTokenProgram,
+        systemProgram,
+      })
+      .instruction();
+    
+    // Combine both instructions in a single transaction
+    const tx = new anchor.web3.Transaction().add(mintIx, depositIx);
+    const signature = await anchor.web3.sendAndConfirmTransaction(
+      connection,
+      tx,
+      [wallet.payer],
+      { commitment: "confirmed" }
+    );
+    
+    console.log("\nYour transaction signature", signature);
+    console.log("https://explorer.solana.com/tx/" + signature + "?cluster=devnet");
+  });
 });

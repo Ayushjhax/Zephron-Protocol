@@ -20,6 +20,7 @@
 - [Product Deep Dive 3: Lending Protocol](#product-deep-dive-3-the-lending-protocol)
   - [Core Mechanics & User Flows](#core-mechanics--user-flows-2)
   - [Mathematical Formulas](#mathematical-formulas-2)
+- [Product Deep Dive 4: Integrated GOLD Lending Protocol](#product-deep-dive-4-integrated-gold-lending-protocol)
 - [Devnet Deployments](#devnet-deployments)
 - [Repository Structure](#repository-structure)
 - [Getting Started](#getting-started)
@@ -275,14 +276,138 @@ The protocol includes basic interest accrual for deposits using exponential comp
 ![](Frontend/asset/lending-interest-accrual.svg)
 
 
+## **Product Deep Dive 4: Integrated GOLD Lending Protocol**
+
+The GOLD protocol includes a built-in lending and borrowing system that enables users to deposit GOLD tokens into a lending pool to earn interest, or borrow GOLD tokens against their deposits. This creates a capital-efficient way to utilize GOLD tokens while maintaining liquidity.
+
+**Program Id:** `3UqYNHL7hUwwQxUrtn1zq6EMFVwqqaJEP2U93Nbfe7Qg` 
+
+### **Core Mechanics & User Flows**
+
+1. **Deposit Tokens:** Users deposit GOLD tokens into the lending pool vault. Deposits earn supply interest based on the pool's utilization rate. The deposited amount also serves as collateral for potential borrowing.
+
+2. **Borrow Tokens:** Users can borrow GOLD tokens from the pool up to 75% of their deposited amount (75% LTV). Borrowers pay interest that accrues over time based on the current borrow rate.
+
+3. **Repay Tokens:** Users repay their borrowed amount plus accrued interest. Repayments first cover accumulated interest, then reduce the principal debt.
+
+4. **Withdraw Tokens:** Users can withdraw their deposited tokens (minus any outstanding debt). Withdrawals first come from accumulated interest, then from the principal deposit.
+
+### **Key Features**
+
+- **Dynamic Interest Rates:** Interest rates adjust automatically based on pool utilization:
+  - **Supply Rate:** Lenders earn interest based on utilization (typically 90% of borrow rate × utilization)
+  - **Borrow Rate:** Borrowers pay interest that scales from 2% (base) up to 20% (at 90% utilization)
+  
+- **Collateral Factor:** Users can borrow up to 75% of their supplied amount (75% LTV)
+
+- **Interest Accrual:** Interest accrues per slot based on the current rates and time elapsed
+
+- **Automatic Updates:** Pool rates and positions are automatically updated on each transaction
+
+### **Key Variables:**
+
+- `S`: Total amount of GOLD tokens supplied to the pool
+- `B`: Total amount of GOLD tokens borrowed from the pool
+- `U`: Utilization rate = (B / S) × 100%
+- `R_supply`: Annual supply interest rate (basis points)
+- `R_borrow`: Annual borrow interest rate (basis points)
+- `CF`: Collateral factor = 75% (0.75)
+- `I_lender`: Accumulated interest for lender
+- `I_borrower`: Accumulated interest for borrower
+- `slots_per_year`: ~630,720,000 slots per year
+
+### **1. Interest Rate Calculation**
+
+Interest rates are calculated dynamically based on pool utilization:
+
+- **Borrow Rate:** 
+  - Base rate: 2% (200 basis points)
+  - Scales linearly with utilization up to 20% at 90% utilization
+  - Formula: `R_borrow = 200 + (U / 90) × 1800` (in basis points)
+
+- **Supply Rate:**
+  - Derived from borrow rate and utilization
+  - Formula: `R_supply = (R_borrow × U × 90) / 10000` (in basis points)
+
+### **2. Interest Accrual**
+
+Interest accrues continuously based on time (slots):
+
+- **Lender Interest:**
+  ```
+  I_lender = (amount_supplied × R_supply × slots_elapsed) / (10000 × slots_per_year)
+  ```
+
+- **Borrower Interest:**
+  ```
+  I_borrower = (amount_borrowed × R_borrow × slots_elapsed) / (10000 × slots_per_year)
+  ```
+
+### **3. Borrowing Capacity**
+
+Users can borrow up to a percentage of their supplied amount:
+
+- **Maximum Borrowable:**
+  ```
+  Max_Borrow = (amount_supplied × CF)
+  ```
+
+- **Borrowing Condition:**
+  ```
+  (current_debt + requested_amount) ≤ Max_Borrow
+  ```
+
+### **4. Withdrawal Capacity**
+
+Users can withdraw their deposits minus any outstanding debt:
+
+- **Available Balance:**
+  ```
+  Available = (amount_supplied + accumulated_interest) - (amount_borrowed + accumulated_interest_owed)
+  ```
+
+### **Example Transaction Flow**
+
+A user can combine minting and lending in a single atomic transaction:
+
+1. **Deposit Collateral & Mint:** User deposits 0.5 SOL and mints 0.000375 GOLD tokens
+2. **Deposit to Lending Pool:** User deposits 0.0001 GOLD into the lending pool
+3. **Earn Interest:** User earns supply interest on their deposit
+4. **Borrow (Optional):** User can borrow up to 75% of their deposit (0.000075 GOLD)
+5. **Repay & Withdraw:** User repays debt and withdraws their deposit plus interest
+
+### **Program Instructions**
+
+- `deposit_tokens(amount)`: Deposit GOLD tokens to the lending pool
+- `borrow_tokens(amount)`: Borrow GOLD tokens from the pool (up to 75% LTV)
+- `repay_tokens(amount)`: Repay borrowed tokens plus interest
+- `withdraw_tokens(amount)`: Withdraw deposited tokens (minus debt)
+
+### **Transaction Example**
+
+See a combined mint + deposit transaction:
+- **Combined Transaction:** Mint GOLD and deposit to lending pool in one atomic transaction
+- All program logs are visible in a single transaction signature on Solana Explorer
+
+
 ## Devnet Deployments
-- **Program ID**: `EGtHEv1xJP3aA3fT5JVB7H2UXoR6s7rB6iYjkifDqdvQ`
+
+### **GOLD Protocol (Programmable Gold)**
+- **Program ID**: `3UqYNHL7hUwwQxUrtn1zq6EMFVwqqaJEP2U93Nbfe7Qg`
 - **Key Transactions**:
   - Initialize: `https://explorer.solana.com/tx/5nQmjPPLXavsWMMmTauj6Lo23QkC9pRG1WUK8HpAdBWdyJQnUQHtm4w1VCKwY2vUhXwQWLtMF5wyqasFT4EKBXQ5?cluster=devnet`
   - Deposit & Mint: `https://explorer.solana.com/tx/5DGJHuLAW1fq85Pgp9eA9cJiW1E75dUpoxqLZHMvpL2Y2rFqZU92y1YpqJHDiHLegu2dk1PFuRNs2FM5px9YvXFh?cluster=devnet`
   - Redeem & Burn: `https://explorer.solana.com/tx/4PGQosQtyKnyXhh4MBoAoW3aLuQnAjk8BREk1P5QEYvfTeRk8yykVB5w4y6cS4aDGxajGJxw3J87pwAnwZiPHg9v?cluster=devnet`
   - Update Config: `https://explorer.solana.com/tx/4ggxS1Ktsim19wxw76LbVADA9huHUs3TN8SQaYSZMBLxDinRCZQ7LDchWc5kwH5P9e7qnoCZeqDnP376xAGhtpHs?cluster=devnet`
   - Liquidate: `https://explorer.solana.com/tx/224iqrkKs8aaQ5PZrax6MsFthH5Sxt3WzXJPpKfYYkYRrqkM6JaDj85wnc2odaQgcdnUXwTDXgNptB6tffXKQmbg?cluster=devnet`
+
+### **Integrated Lending Protocol**
+- **Program ID**: `3UqYNHL7hUwwQxUrtn1zq6EMFVwqqaJEP2U93Nbfe7Qg` (same as GOLD protocol)
+- **Key Features**:
+  - Deposit GOLD tokens to earn supply interest
+  - Borrow GOLD tokens up to 75% LTV
+  - Dynamic interest rates based on utilization
+  - Combined mint + deposit in single transaction
 - **Pyth Oracles**:
   - GOLD/USD PriceUpdateV2: `https://explorer.solana.com/address/2uPQGpm8X4ZkxMHxrAW1QuhXcse1AHEgPih6Xp9NuEWW?cluster=devnet`
   - SOL/USD PriceUpdateV2: `https://explorer.solana.com/address/7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE?cluster=devnet`

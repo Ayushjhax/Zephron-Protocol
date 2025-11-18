@@ -40,4 +40,21 @@ pub mod gold {
     pub fn liquidate(ctx: Context<Liquidate>, amount_to_burn: u64) -> Result<()> {
         process_liquidate(ctx, amount_to_burn)
     }
+
+    // Lending protocol functions
+    pub fn deposit_tokens(ctx: Context<DepositTokens>, amount: u64) -> Result<()> {
+        process_deposit_tokens(ctx, amount)
+    }
+
+    pub fn borrow_tokens(ctx: Context<BorrowTokens>, amount: u64) -> Result<()> {
+        process_borrow_tokens(ctx, amount)
+    }
+
+    pub fn repay_tokens(ctx: Context<RepayTokens>, amount: u64) -> Result<()> {
+        process_repay_tokens(ctx, amount)
+    }
+
+    pub fn withdraw_tokens(ctx: Context<WithdrawTokens>, amount: u64) -> Result<()> {
+        process_withdraw_tokens(ctx, amount)
+    }
 }

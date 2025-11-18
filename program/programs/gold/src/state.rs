@@ -24,3 +24,36 @@ pub struct Config {
     pub bump: u8,               // store bump seed for this config account
     pub bump_mint_account: u8,  // store bump seed for the stablecoin mint account PDA
 }
+
+#[account]
+#[derive(InitSpace, Debug)]
+pub struct LendingPool {
+    pub total_supplied: u64,        // total amount of tokens supplied to the pool
+    pub total_borrowed: u64,        // total amount of tokens borrowed from the pool
+    pub last_update_slot: u64,      // last slot when interest was calculated
+    pub supply_rate: u64,           // annual supply interest rate (basis points, e.g., 500 = 5%)
+    pub borrow_rate: u64,           // annual borrow interest rate (basis points, e.g., 1000 = 10%)
+    pub utilization_rate: u64,     // current utilization rate (basis points)
+    pub bump: u8,                   // bump seed for the lending pool PDA
+}
+
+#[account]
+#[derive(InitSpace, Debug)]
+pub struct LenderPosition {
+    pub lender: Pubkey,             // lender's wallet address
+    pub amount_supplied: u64,       // amount of tokens supplied by this lender
+    pub accumulated_interest: u64,  // accumulated interest earned
+    pub last_update_slot: u64,      // last slot when interest was calculated
+    pub bump: u8,                   // bump seed for the lender position PDA
+}
+
+#[account]
+#[derive(InitSpace, Debug)]
+pub struct BorrowerPosition {
+    pub borrower: Pubkey,           // borrower's wallet address
+    pub amount_borrowed: u64,       // amount of tokens borrowed
+    pub amount_supplied: u64,       // amount of tokens supplied as collateral
+    pub accumulated_interest: u64,  // accumulated interest owed
+    pub last_update_slot: u64,      // last slot when interest was calculated
+    pub bump: u8,                   // bump seed for the borrower position PDA
+}
