@@ -184,8 +184,8 @@ describe("gold", () => {
   );
 
   it("Deposit tokens to lending pool", async () => {
-    // First mint more tokens if needed, then deposit to lending pool
-    const depositAmount = 50_000; // 0.00005 GOLD tokens (half of what we have)
+    // Deposit available tokens to lending pool (after previous tests, we have ~25,000 tokens)
+    const depositAmount = 20_000; // 0.00002 GOLD tokens (less than available to be safe)
     
     const tx = await program.methods
       .depositTokens(new BN(depositAmount))
@@ -209,7 +209,7 @@ describe("gold", () => {
   });
 
   it("Borrow tokens from lending pool", async () => {
-    const borrowAmount = 30_000; // 0.00003 GOLD tokens (60% of deposit, under 75% LTV)
+    const borrowAmount = 15_000; // 0.000015 GOLD tokens (75% of 20,000 deposit, at max LTV)
     
     const tx = await program.methods
       .borrowTokens(new BN(borrowAmount))
@@ -255,7 +255,7 @@ describe("gold", () => {
   });
 
   it("Withdraw tokens from lending pool", async () => {
-    const withdrawAmount = 20_000; // 0.00002 GOLD tokens
+    const withdrawAmount = 10_000; // 0.00001 GOLD tokens (withdraw half of deposit, leaving room for debt)
     
     const tx = await program.methods
       .withdrawTokens(new BN(withdrawAmount))

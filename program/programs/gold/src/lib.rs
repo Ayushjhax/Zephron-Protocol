@@ -7,7 +7,7 @@ mod error;
 mod instructions;
 mod state;
 
-declare_id!("3UqYNHL7hUwwQxUrtn1zq6EMFVwqqaJEP2U93Nbfe7Qg");
+declare_id!("Hkb3K3f9FWtosSZwk9KRbV8izZ2hFEF9LgxSwVxvDFjL");
 
 #[program]
 pub mod gold {

@@ -6,10 +6,10 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-gold = "3UqYNHL7hUwwQxUrtn1zq6EMFVwqqaJEP2U93Nbfe7Qg"
+gold = "Hkb3K3f9FWtosSZwk9KRbV8izZ2hFEF9LgxSwVxvDFjL"
 
 [programs.devnet]
-gold = "3UqYNHL7hUwwQxUrtn1zq6EMFVwqqaJEP2U93Nbfe7Qg"
+gold = "Hkb3K3f9FWtosSZwk9KRbV8izZ2hFEF9LgxSwVxvDFjL"
 
 [registry]
 url = "https://api.apr.dev"

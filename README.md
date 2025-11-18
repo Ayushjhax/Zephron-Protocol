@@ -279,7 +279,7 @@ The protocol includes basic interest accrual for deposits using exponential comp
 
 The GOLD protocol includes a built-in lending and borrowing system that enables users to deposit GOLD tokens into a lending pool to earn interest, or borrow GOLD tokens against their deposits. This creates a capital-efficient way to utilize GOLD tokens while maintaining liquidity.
 
-**Program Id:** `3UqYNHL7hUwwQxUrtn1zq6EMFVwqqaJEP2U93Nbfe7Qg` 
+**Program Id:** `Hkb3K3f9FWtosSZwk9KRbV8izZ2hFEF9LgxSwVxvDFjL` 
 
 ### **Core Mechanics & User Flows**
 
@@ -392,7 +392,7 @@ See a combined mint + deposit transaction:
 ## Devnet Deployments
 
 ### **GOLD Protocol (Programmable Gold)**
-- **Program ID**: `3UqYNHL7hUwwQxUrtn1zq6EMFVwqqaJEP2U93Nbfe7Qg`
+- **Program ID**: `Hkb3K3f9FWtosSZwk9KRbV8izZ2hFEF9LgxSwVxvDFjL`
 - **Key Transactions**:
   - Initialize: `https://explorer.solana.com/tx/5nQmjPPLXavsWMMmTauj6Lo23QkC9pRG1WUK8HpAdBWdyJQnUQHtm4w1VCKwY2vUhXwQWLtMF5wyqasFT4EKBXQ5?cluster=devnet`
   - Deposit & Mint: `https://explorer.solana.com/tx/5DGJHuLAW1fq85Pgp9eA9cJiW1E75dUpoxqLZHMvpL2Y2rFqZU92y1YpqJHDiHLegu2dk1PFuRNs2FM5px9YvXFh?cluster=devnet`
@@ -401,7 +401,7 @@ See a combined mint + deposit transaction:
   - Liquidate: `https://explorer.solana.com/tx/224iqrkKs8aaQ5PZrax6MsFthH5Sxt3WzXJPpKfYYkYRrqkM6JaDj85wnc2odaQgcdnUXwTDXgNptB6tffXKQmbg?cluster=devnet`
 
 ### **Integrated Lending Protocol**
-- **Program ID**: `3UqYNHL7hUwwQxUrtn1zq6EMFVwqqaJEP2U93Nbfe7Qg` (same as GOLD protocol)
+- **Program ID**: `Hkb3K3f9FWtosSZwk9KRbV8izZ2hFEF9LgxSwVxvDFjL` (same as GOLD protocol)
 - **Key Features**:
   - Deposit GOLD tokens to earn supply interest
   - Borrow GOLD tokens up to 75% LTV
